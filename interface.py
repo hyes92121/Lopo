@@ -11,24 +11,18 @@ class PhysioInterface(object):
         
         self.records = {}
 
-    def read_record(self, filename, custom_name=None):
-        try:
-            assert os.path.exists(filename)
-        except AssertionError:
-            raise AssertionError(f'Record {filename} does not exist.')
+    def load_record(self, filename, **kwargs):
         
-        record = wfdb.rdrecord(filename, smooth_frames=True)
+        record = wfdb.rdrecord(filename, **kwargs)
                    
         if record.record_name in self.records:
             print(f'Record {record.record_name} already exists. Writing over existing record.')
             self.records[record.record_name] = record
+        else:
+            self.records[record.record_name] = record
 
     def get_record(self, record_name):
-        try:
-            assert record_name in self.records
-        except AssertionError:
-            raise AssertionError(f'Record {record_name} does not exist. Please read the record first.')
-            
+        self.__exist_in_local(record_name, self.records)
         return self.records[record_name]
 
     def list_records(self):
@@ -43,6 +37,17 @@ class PhysioInterface(object):
 
     def download_records(self, url):
         pass
+
+    def get_signal(self, record_name):
+        self.__exist_in_local(record_name, self.records)
+        return self.records[record_name].p_signal
+
+    def __exist_in_local(self, target, source):
+        try:
+            assert (target in source)
+        except AssertionError:
+            raise AssertionError(f'Record {target} does not exist. Please load record first.')
+        
 
 
 
