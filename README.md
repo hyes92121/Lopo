@@ -12,5 +12,5 @@ To switch branches, run
 
 ### WARNING: Do not push to master unless code is reviewed by all members
 
-
-
+![Alt text](timeline.jpg) "Timeline"
+![Alt text](code_struct.jpg) "Code Structure"
