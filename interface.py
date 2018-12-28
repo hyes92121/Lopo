@@ -35,8 +35,11 @@ class PhysioInterface(object):
     def get_records(self):
         return self.records
 
-    def download_records(self, url):
-        pass
+    def download_records(self, database_name, download_dir):
+        try:
+            wfdb.dl_database(database_name, dl_dir=download_dir)
+        except Exception as error:
+            raise error
 
     def get_signal(self, record_name):
         self.__exist_in_local(record_name, self.records)

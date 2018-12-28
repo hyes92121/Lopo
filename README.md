@@ -2,3 +2,4 @@
 
 ![Alt text](raw.png) "Raw Signals"
 ![Alt text](count.png) "Transformations"
+![Alt text](norm.png) "Normalized signals"

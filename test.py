@@ -18,6 +18,18 @@ from interface import PhysioInterface
 
 def time_series_to_char(ts):
     ts = ts.flatten()
+
+    return sax_via_window(
+            series=ts, 
+            win_size=300,
+            paa_size=4, 
+            alphabet_size=4,
+            nr_strategy='none',
+            z_threshold=0.1)
+
+
+def time_series_to_char_1(ts):
+    ts = ts.flatten()
     ts = znorm(ts)
     ts = paa(ts, 2000)
     
@@ -30,6 +42,7 @@ def time_series_to_char(ts):
             z_threshold=0.1
             )
     return rtn
+
 
 def create_mapping():
     import itertools
@@ -83,6 +96,28 @@ if __name__ == '__main__':
     ax2.plot(time_axis, np.array(ts2))
     ax3.plot(time_axis, np.array(ts3))
     ax4.plot(time_axis, np.array(ts4))
+    axes = plt.gca()
+    axes.set_ylim([-0.25, 1])
 
     plt.savefig('raw.png', dpi=400)
+
+    # plot normalized signal
+    time_axis = np.array(range(samp_end-samp_start))
+    ts1, ts2, ts3, ts4 = np.hsplit(signal, 4)
+
+    ts1 = znorm(ts1.flatten())
+    ts2 = znorm(ts2.flatten())
+    ts3 = znorm(ts3.flatten())
+    ts4 = znorm(ts4.flatten())
+
+    f, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, sharex='col', sharey='row')
+
+    ax1.plot(time_axis, np.array(ts1))
+    ax2.plot(time_axis, np.array(ts2))
+    ax3.plot(time_axis, np.array(ts3))
+    ax4.plot(time_axis, np.array(ts4))
+
+    plt.savefig('norm.png', dpi=400)
+
+
 
