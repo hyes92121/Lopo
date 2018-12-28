@@ -18,6 +18,7 @@ from interface import PhysioInterface
 
 def time_series_to_char(ts):
     ts = ts.flatten()
+    ts = znorm(ts)
 
     return sax_via_window(
             series=ts, 
@@ -102,7 +103,9 @@ if __name__ == '__main__':
     plt.savefig('raw.png', dpi=400)
 
     # plot normalized signal
-    time_axis = np.array(range(samp_end-samp_start))
+    sig_len = samp_end - samp_start
+
+    time_axis = np.array(range(sig_len))
     ts1, ts2, ts3, ts4 = np.hsplit(signal, 4)
 
     ts1 = znorm(ts1.flatten())
@@ -113,9 +116,24 @@ if __name__ == '__main__':
     f, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, sharex='col', sharey='row')
 
     ax1.plot(time_axis, np.array(ts1))
+    ax1.plot(time_axis, np.array([0.67]*sig_len), linestyle=':')
+    ax1.plot(time_axis, np.array([-0.67]*sig_len), linestyle=':')
+    ax1.plot(time_axis, np.array([0]*sig_len), linestyle=':')
+
     ax2.plot(time_axis, np.array(ts2))
+    ax2.plot(time_axis, np.array([0.67]*sig_len), linestyle=':')
+    ax2.plot(time_axis, np.array([-0.67]*sig_len), linestyle=':')
+    ax2.plot(time_axis, np.array([0]*sig_len), linestyle=':')
+
     ax3.plot(time_axis, np.array(ts3))
+    ax3.plot(time_axis, np.array([0.67]*sig_len), linestyle=':')
+    ax3.plot(time_axis, np.array([-0.67]*sig_len), linestyle=':')
+    ax3.plot(time_axis, np.array([0]*sig_len), linestyle=':')
+
     ax4.plot(time_axis, np.array(ts4))
+    ax4.plot(time_axis, np.array([0.67]*sig_len), linestyle=':')
+    ax4.plot(time_axis, np.array([-0.67]*sig_len), linestyle=':')
+    ax4.plot(time_axis, np.array([0]*sig_len), linestyle=':')
 
     plt.savefig('norm.png', dpi=400)
 
