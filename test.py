@@ -79,11 +79,20 @@ if __name__ == '__main__':
     # plot the count for each seq
     time_axis = np.array(range(len(total_count[0])))
     f, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, sharex='col', sharey='row')
+
+    ts1, ts2, ts3, ts4 = total_count[0], total_count[1], total_count[2], total_count[3]
+    ts1, ts2, ts3, ts4 = np.array(ts1), np.array(ts2), np.array(ts3), np.array(ts4)
+
+    print(np.linalg.norm(ts1-ts2))
+    print(np.linalg.norm(ts1-ts3))
+    print(np.linalg.norm(ts1-ts4))
+
+    """
     
-    ax1.plot(time_axis, np.array(total_count[0]))
-    ax2.plot(time_axis, np.array(total_count[1]))
-    ax3.plot(time_axis, np.array(total_count[2]))
-    ax4.plot(time_axis, np.array(total_count[3]))
+    ax1.plot(time_axis, np.array(ts1))
+    ax2.plot(time_axis, np.array(ts2))
+    ax3.plot(time_axis, np.array(ts3))
+    ax4.plot(time_axis, np.array(ts4))
 
     plt.savefig('count.png', dpi=400)
 
@@ -136,6 +145,7 @@ if __name__ == '__main__':
     ax4.plot(time_axis, np.array([0]*sig_len), linestyle=':')
 
     plt.savefig('norm.png', dpi=400)
+    """
 
 
 
