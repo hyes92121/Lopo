@@ -3,17 +3,21 @@ import numpy as np
 from sys import argv
 from collections import defaultdict
 import random
+import torch
 import torch.utils.data as Data
+from torch import optim, nn
+from rnn import EncoderRNN, DecoderRNN, train, evaluate
 torch.manual_seed(1)
-    
+
 
 def readSeries(datadir, cities, attr):
     wm = WeatherManager(datadir)
-    wm.loadSeries(cities, attr) #, date_range=("2017-10-12","2017-11-01"))
+    wm.loadSeries(cities, attr)  # , date_range=("2017-10-12","2017-11-01"))
     wm.interpolate()
-    wm.averaged(base = 24)
+    wm.averaged(base=24)
     series = wm.getSeries()
     return series
+
 
 def sliceSeries(two_d_array, length):
     tmp = []
@@ -21,7 +25,8 @@ def sliceSeries(two_d_array, length):
         sliced = two_d_array[:, i:i+length]
         if sliced.shape[1] == length:
             tmp.append(sliced)
-    return tmp 
+    return tmp
+
 
 def readData(datadir):
     cities = ["Philadelphia", "New York", "Montreal", "Boston", "Eilat", "Haifa", "Nahariyya", "Jerusalem"]
@@ -42,46 +47,37 @@ def readData(datadir):
     random.shuffle(samples)
     train_samples, eval_samples = samples[:int(len(samples)*0.8)], samples[int(len(samples)*0.8):]
     train_samples, eval_samples = torch.from_numpy(np.stack(train_samples)), torch.from_numpy(np.stack(eval_samples))
-    return train_samples, eval_samples 
+    return train_samples, eval_samples
 
-
-def trainIters(train_pairs, eval_pairs, encoder, decoder, n_iters, print_every=1000, learning_rate=0.01):
-    start = time.time()
-    plot_losses = []
-    print_loss_total = 0  # Reset every print_every
-    plot_loss_total = 0  # Reset every plot_every
-
-    encoder_optimizer = optim.SGD(encoder.parameters(), lr=learning_rate)
-    decoder_optimizer = optim.SGD(decoder.parameters(), lr=learning_rate)
-    training_pairs = [tensorsFromPair(p) for p in train_pairs]
-    criterion = nn.NLLLoss()
-
-    for iter in range(len(training_pairs) + 1):
-        train_input_tensor, train_target_tensor = training_pairs[iter - 1][0], training_pairs[iter - 1][1]
-
-        loss = train(train_input_tensor, train_target_tensor, encoder,
-                     decoder, encoder_optimizer, decoder_optimizer, criterion)
-        print_loss_total += loss
-        plot_loss_total += loss
-
-        if iter % print_every == 0:
-            print_loss_avg = print_loss_total / print_every
-            print_loss_total = 0
-            print('%s (%d %d%%) %.4f' % (timeSince(start, iter / n_iters),
-                                         iter, iter / n_iters * 100, print_loss_avg))
-
-
-            
 
 if __name__ == "__main__":
     datadir = argv[1]
     train_samples, eval_samples = readData(datadir)
     train_dataset = Data.TensorDataset(data_tensor=train_samples, target_tensor=train_samples)
-    loader = Data.Dataloader(dataset=train_dataset, batch_size=32, shuffle=True, num_workers=2)
+    train_loader = Data.Dataloader(dataset=train_dataset, batch_size=32, shuffle=True, num_workers=2)
+    eval_dataset = Data.TensorDataset(data_tensor=eval_samples, target_tensor=eval_samples)
+    eval_loader = Data.Dataloader(dataset=eval_dataset, batch_size=32, shuffle=False, num_workers=2)
+
+    input_size = output_size = hidden_size = train_samples.shape[1]
+    encoder = EncoderRNN(input_size=input_size, hidden_size=hidden_size)
+    decoder = DecoderRNN(hidden_size=hidden_size, output_size=output_size)
+
+    train_loss_total = 0
+    eval_loss_total = 0
+    learning_rate = 0.01
+    encoder_optimizer = optim.SGD(encoder.parameters(), lr=learning_rate)
+    decoder_optimizer = optim.SGD(decoder.parameters(), lr=learning_rate)
+    criterion = nn.NLLLoss()
+ 
     for epoch in range(10):
-        for step, (batch_x, batch_y) in enumerate(loader):
+        for step, (batch_x, batch_y) in enumerate(train_loader):
+            train_num = batch_x.shape[0]
+            train_loss = train(batch_x, batch_y, encoder, decoder, encoder_optimizer, decoder_optimizer, criterion)
+            train_loss_total += train_loss
 
+        for step, (batch_x, batch_y) in enumerate(eval_loader):
+            eval_num = batch_x.shape[0]
+            eval_loss = evaluate(batch_x, batch_y, encoder, decoder, criterion)
+            eval_loss_total += eval_loss
 
-
-    
-
+        print("Epoch: ", epoch, "|Train loss: ", train_loss_total / train_num, "|Eval loss: ", eval_loss_total / eval_num)

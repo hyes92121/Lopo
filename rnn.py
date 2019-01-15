@@ -87,12 +87,11 @@ def train(input_tensor, target_tensor, encoder, decoder, encoder_optimizer, deco
     return loss.item() / target_length
 
 
-def evaluate(encoder, decoder, pair, max_length=MAX_LENGTH):
+def evaluate(input_tensor, target_tensor, encoder, decoder, criterion, max_length=MAX_LENGTH):
 
 
     with torch.no_grad():
         loss = 0
-        input_tensor, target_tensor = pair[0], pair[1]
         input_length = input_tensor.size()[0]
         target_length = target_tensor.size()[0]
         encoder_hidden = encoder.initHidden()
