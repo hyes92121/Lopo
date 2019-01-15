@@ -56,6 +56,16 @@ class WeatherManager():
         
         self.city_series = city_series
 
+    def averaged(self, base=24):
+        city_series = self.city_series
+        for idx, c in enumerate(city_series):
+            tmp = []
+            for i in range(0, len(c), base):
+                tmp.append(np.mean(c[i:i+base]))
+            city_series[idx] = np.array(tmp)
+        
+        self.city_series = city_series 
+
     def getSeries(self):
         return self.city_series
 
